@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack serve && webpack --watch"
+    "start": "webpack serve && webpack --watch",
+    "build": "webpack"
   },
   "author": "",
   "license": "ISC",

@@ -1,19 +1,12 @@
 import Game from '../main';
 
+import { asteroid , cube } from '../geometry/geometry';
+
 class Player{
     angle:number;
     shape:number;
     constructor(game:Game){
-        this.shape = game.video.createDShape([
-            -16,16,
-            16,16,
-            16,16,
-            16,-16,
-            16,-16,
-            -16,-16,
-            -16,-16,
-            -16,16
-        ]),
+        this.shape = game.video.createDShape(cube),
         this.angle = 90;
     }
 

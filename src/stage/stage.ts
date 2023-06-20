@@ -1,11 +1,14 @@
 import Game from '../main';
 import Player from './player';
+import Meteors from './meteors';
 
 class Stage{
     player:Player;
+    meteors:Meteors;
     
     constructor(game:Game){
         this.player = new Player(game);
+        this.meteors = new Meteors(game);
     }
 
     update(game:Game){

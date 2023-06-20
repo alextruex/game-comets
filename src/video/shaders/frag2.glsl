@@ -1,12 +1,12 @@
 precision mediump float;
 
-varying vec2 v_texcoord;
+varying vec2 v_tex;
 
 uniform sampler2D u_texture;
-uniform float u_mixAmount;
-uniform vec4 u_fadeColor;
+
+
 
 void main() {
-  vec4 color = texture2D(u_texture, v_texcoord);
-  gl_FragColor = mix(color, u_fadeColor, u_mixAmount);
+  vec4 color = texture2D(u_texture, v_tex);
+  gl_FragColor = mix(color, vec4(0.0,0.0,0.0,1.0), 0.1);
 }

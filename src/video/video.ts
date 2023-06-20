@@ -2,8 +2,8 @@ import frag from './shaders/frag.glsl';
 import vert from './shaders/vert.glsl';
 import vert2 from './shaders/vert2.glsl';
 import frag2 from './shaders/frag2.glsl';
-import vert3 from './shaders/vert2.glsl';
-import frag3 from './shaders/frag2.glsl';
+import vert3 from './shaders/vert3.glsl';
+import frag3 from './shaders/frag3.glsl';
 
 import m3Multiply from '../math/matrix';
 
@@ -40,7 +40,7 @@ class Video{
     sShapes:Array<StaticShape> = [];
     tBoxesL:Array<TextBoxL> = [];
     projection:Array<number> = [];
-    pixels:number = 0;
+    swap:number = 0;
 
     constructor(width:number, height:number){
         //Initialize WebGL context
@@ -83,11 +83,13 @@ class Video{
 
         //Load Programs
         this.addProg(vert,frag);
+        this.addProg(vert3,frag3);
         this.addProg(vert2,frag2);
         
 
         this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
+        // Logic texture 1
         this.textures[0] = <WebGLTexture>this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[0]);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0,
@@ -101,9 +103,27 @@ class Video{
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[0]);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[0], 0);
 
-        const attachmentPoint = this.gl.COLOR_ATTACHMENT0;
-        const level = 0;
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, attachmentPoint, this.gl.TEXTURE_2D, this.textures[0], level);
+        const attachmentPoint1 = this.gl.COLOR_ATTACHMENT0;
+        const level1 = 0;
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, attachmentPoint1, this.gl.TEXTURE_2D, this.textures[0], level1);
+
+        // Logic texture 2
+        this.textures[1] = <WebGLTexture>this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[1]);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0,
+        this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+        this.fBuffers[1] = <WebGLFramebuffer>this.gl.createFramebuffer();
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[1]);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0);
+
+        const attachmentPoint2 = this.gl.COLOR_ATTACHMENT0;
+        const level2 = 0;
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, attachmentPoint2, this.gl.TEXTURE_2D, this.textures[1], level2);
       
   
     }
@@ -157,7 +177,8 @@ class Video{
     render(){
 
         // Clear
-        
+        let a = this.swap;
+        let b = 1 - this.swap;
 
         // First we bind to our framebuffer, which has a texture attached to it
         
@@ -199,17 +220,18 @@ class Video{
             
 
             //we are drawing onto our texture
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[0]);
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[a]);
             this.gl.viewport(0,0,this.width,this.height);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            //this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.gl.drawArrays(this.gl.LINES, 0, 8);
 
             //-------------------Draw texture to frame---------------------------
 
-            //now draw texture onto canvas
+            
+
             this.gl.useProgram(this.programs[1]);
 
-            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[a]);
 
             let a_pos2 = this.gl.getAttribLocation(this.programs[1],'a_pos');
             this.gl.enableVertexAttribArray(a_pos2);
@@ -233,10 +255,36 @@ class Video{
             this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
-            //-------------------- Draw scanlines --------------
+            //-------------------- fade texture --------------
 
-            
+            this.gl.useProgram(this.programs[2]);
 
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[a]);
+
+            let a_pos3 = this.gl.getAttribLocation(this.programs[1],'a_pos');
+            this.gl.enableVertexAttribArray(a_pos3);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[0]);
+            this.gl.vertexAttribPointer(a_pos3,2,this.gl.FLOAT,false,0,0);
+
+            let a_tex3 = this.gl.getAttribLocation(this.programs[1],'a_tex');
+            this.gl.enableVertexAttribArray(a_tex3);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[1]);
+            this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
+
+            let u_res2 = this.gl.getUniformLocation(this.programs[1],'u_res');
+            this.gl.uniform2f(u_res2,this.width*4,this.height*4)
+
+            let u_texres2 = this.gl.getUniformLocation(this.programs[1],'u_texres');
+            this.gl.uniform2f(u_texres2,this.width,this.height)
+
+            // Where to draw
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[b]);
+            this.gl.viewport(0,0,this.width,this.height);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+
+
+            this.swap = b;
         }
         
         

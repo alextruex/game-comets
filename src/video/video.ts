@@ -41,7 +41,6 @@ class Video{
     tBoxesL:Array<TextBoxL> = [];
     projection:Array<number> = [];
     pixels:number = 0;
-    crt:HTMLImageElement;
 
     constructor(width:number, height:number){
         //Initialize WebGL context
@@ -50,9 +49,10 @@ class Video{
         this.canvas = <HTMLCanvasElement>document.getElementById('glCanvas');
         this.canvas.width = width*4;
         this.canvas.height = height*4;
-        this.canvas.style.imageRendering = 'optimizeSpeed';
+        //this.canvas.style.imageRendering = 'optimizeSpeed';
+        //this.canvas.style.imageRendering = 'optimizeLegibility';
         this.gl = <WebGLRenderingContext>this.canvas.getContext('webgl',{preserveDrawingBuffer:false,premultipliedAlpha: false });
-        //this.gl.clearColor(0.1, 0.0, 0.0, 1.0);    
+        this.gl.clearColor(0.1, 0.0, 0.0, 1.0);    
 
         let buffer = <WebGLBuffer>this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
@@ -96,18 +96,6 @@ class Video{
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-
-        this.crt = new Image();
-        this.crt.src = 'crt2.png';
-        this.crt.onload = () => {
-            this.textures[1] = <WebGLTexture>this.gl.createTexture();
-            this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[1]);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.crt);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        }
 
         this.fBuffers[0] = <WebGLFramebuffer>this.gl.createFramebuffer();
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[0]);
@@ -213,7 +201,7 @@ class Video{
             //we are drawing onto our texture
             this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[0]);
             this.gl.viewport(0,0,this.width,this.height);
-            //this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.gl.drawArrays(this.gl.LINES, 0, 8);
 
             //-------------------Draw texture to frame---------------------------
@@ -242,7 +230,7 @@ class Video{
             // Where to draw
             this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
             this.gl.viewport(0,0,this.width*4,this.height*4);
-            //this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
             //-------------------- Draw scanlines --------------

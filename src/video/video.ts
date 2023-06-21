@@ -47,85 +47,42 @@ class Video{
         this.width = width;
         this.height = height;
         this.canvas = <HTMLCanvasElement>document.getElementById('glCanvas');
-        this.canvas.width = width*4;
-        this.canvas.height = height*4;
+        this.canvas.width = width*2;
+        this.canvas.height = height*2;
         //this.canvas.style.imageRendering = 'optimizeSpeed';
-        //this.canvas.style.imageRendering = 'optimizeLegibility';
-        this.gl = <WebGLRenderingContext>this.canvas.getContext('webgl',{preserveDrawingBuffer:false,premultipliedAlpha: false });
+        this.canvas.style.imageRendering = 'optimizeLegibility';
+        this.gl = <WebGLRenderingContext>this.canvas.getContext('webgl',{preserveDrawingBuffer:false});
         this.gl.clearColor(0.1, 0.0, 0.0, 1.0);    
 
-        let buffer = <WebGLBuffer>this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
+        //Load Programs
+        this.addProg(vert,frag);
+        this.addProg(vert3,frag3);
+        this.addProg(vert2,frag2);
+
+        this.addBuff([
             1.0,  1.0,
             -1.0,  1.0,
             -1.0, -1.0,
             // Second triangle:
             -1.0, -1.0,
              1.0, -1.0,
-             1.0,  1.0]), this.gl.STATIC_DRAW);
-        this.buffers.push(buffer);
+             1.0,  1.0
+        ]);
 
-        buffer = <WebGLBuffer>this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
+        this.addBuff([
             1.0,  1.0,
             0,  1.0,
             0, 0,
             // Second triangle:
             0, 0,
             1.0, 0,
-            1.0, 1.0]), this.gl.STATIC_DRAW);
-        this.buffers.push(buffer);
+            1.0, 1.0
+        ]);
 
-
-
-
-        //Load Programs
-        this.addProg(vert,frag);
-        this.addProg(vert3,frag3);
-        this.addProg(vert2,frag2);
-        
-
-        this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
-
-        // Logic texture 1
-        this.textures[0] = <WebGLTexture>this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[0]);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0,
-        this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-
-        this.fBuffers[0] = <WebGLFramebuffer>this.gl.createFramebuffer();
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[0]);
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[0], 0);
-
-        const attachmentPoint1 = this.gl.COLOR_ATTACHMENT0;
-        const level1 = 0;
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, attachmentPoint1, this.gl.TEXTURE_2D, this.textures[0], level1);
-
-        // Logic texture 2
-        this.textures[1] = <WebGLTexture>this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[1]);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0,
-        this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-
-        this.fBuffers[1] = <WebGLFramebuffer>this.gl.createFramebuffer();
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[1]);
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0);
-
-        const attachmentPoint2 = this.gl.COLOR_ATTACHMENT0;
-        const level2 = 0;
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, attachmentPoint2, this.gl.TEXTURE_2D, this.textures[1], level2);
-      
-  
+        let i = this.addTex();
+        this.addFrameBuff(this.textures[i]);
+        i = this.addTex();
+        this.addFrameBuff(this.textures[i]);
     }
 
     private addProg(vertShader:string, fragShader:string) {
@@ -139,7 +96,33 @@ class Video{
         this.gl.attachShader(program, vShader);
         this.gl.attachShader(program, fShader);
         this.gl.linkProgram(program);
-        return this.programs.push(program);
+        return this.programs.push(program) - 1;
+    }
+
+    private addBuff(vertices:Array<number>){
+        let buffer = <WebGLBuffer>this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+        return this.buffers.push(buffer) - 1;
+    }
+
+    private addTex(){
+        let tex = <WebGLTexture>this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D,tex);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0,
+        this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        return this.textures.push(tex) - 1;
+    }
+
+    private addFrameBuff(tex:WebGLTexture){
+        let fBuffer = <WebGLFramebuffer>this.gl.createFramebuffer();
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fBuffer);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, tex, 0);
+        return this.fBuffers.push(fBuffer) - 1;
     }
 
     public createDShape(vertices:Array<number>){
@@ -172,6 +155,11 @@ class Video{
 
     public rotate(angle:number, i:number){
         this.dShapes[i].angle -= angle;
+    }
+
+    public position(x:number, y:number, i:number){
+        this.dShapes[i].x = x;
+        this.dShapes[i].y = y;
     }
 
     render(){
@@ -224,68 +212,72 @@ class Video{
             this.gl.viewport(0,0,this.width,this.height);
             //this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.gl.drawArrays(this.gl.LINES, 0, 8);
+        }
 
-            //-------------------Draw texture to frame---------------------------
+        //-------------------Draw texture to frame---------------------------
 
             
 
-            this.gl.useProgram(this.programs[1]);
+        this.gl.useProgram(this.programs[1]);
 
-            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[a]);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[a]);
 
-            let a_pos2 = this.gl.getAttribLocation(this.programs[1],'a_pos');
-            this.gl.enableVertexAttribArray(a_pos2);
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[0]);
-            this.gl.vertexAttribPointer(a_pos2,2,this.gl.FLOAT,false,0,0);
+        let a_pos2 = this.gl.getAttribLocation(this.programs[1],'a_pos');
+        this.gl.enableVertexAttribArray(a_pos2);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[0]);
+        this.gl.vertexAttribPointer(a_pos2,2,this.gl.FLOAT,false,0,0);
 
-            let a_tex = this.gl.getAttribLocation(this.programs[1],'a_tex');
-            this.gl.enableVertexAttribArray(a_tex);
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[1]);
-            this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
+        let a_tex = this.gl.getAttribLocation(this.programs[1],'a_tex');
+        this.gl.enableVertexAttribArray(a_tex);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[1]);
+        this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
 
-            let u_res = this.gl.getUniformLocation(this.programs[1],'u_res');
-            this.gl.uniform2f(u_res,this.width*4,this.height*4)
+        let u_res = this.gl.getUniformLocation(this.programs[1],'u_res');
+        this.gl.uniform2f(u_res,this.width*4,this.height*4)
 
-            let u_texres = this.gl.getUniformLocation(this.programs[1],'u_texres');
-            this.gl.uniform2f(u_texres,this.width,this.height)
+        let u_texres = this.gl.getUniformLocation(this.programs[1],'u_texres');
+        this.gl.uniform2f(u_texres,this.width,this.height)
 
-            // Where to draw
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-            this.gl.viewport(0,0,this.width*4,this.height*4);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-            this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+        let u_random = this.gl.getUniformLocation(this.programs[1],'u_random');
+        this.gl.uniform1f(u_random,Math.random())
 
-            //-------------------- fade texture --------------
+        // Where to draw
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        this.gl.viewport(0,0,this.width*2,this.height*2);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
-            this.gl.useProgram(this.programs[2]);
+        //-------------------- fade texture --------------
 
-            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[a]);
+        this.gl.useProgram(this.programs[2]);
 
-            let a_pos3 = this.gl.getAttribLocation(this.programs[1],'a_pos');
-            this.gl.enableVertexAttribArray(a_pos3);
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[0]);
-            this.gl.vertexAttribPointer(a_pos3,2,this.gl.FLOAT,false,0,0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[a]);
 
-            let a_tex3 = this.gl.getAttribLocation(this.programs[1],'a_tex');
-            this.gl.enableVertexAttribArray(a_tex3);
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[1]);
-            this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
+        let a_pos3 = this.gl.getAttribLocation(this.programs[1],'a_pos');
+        this.gl.enableVertexAttribArray(a_pos3);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[0]);
+        this.gl.vertexAttribPointer(a_pos3,2,this.gl.FLOAT,false,0,0);
 
-            let u_res2 = this.gl.getUniformLocation(this.programs[1],'u_res');
-            this.gl.uniform2f(u_res2,this.width*4,this.height*4)
+        let a_tex3 = this.gl.getAttribLocation(this.programs[1],'a_tex');
+        this.gl.enableVertexAttribArray(a_tex3);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[1]);
+        this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
 
-            let u_texres2 = this.gl.getUniformLocation(this.programs[1],'u_texres');
-            this.gl.uniform2f(u_texres2,this.width,this.height)
+        let u_res2 = this.gl.getUniformLocation(this.programs[1],'u_res');
+        this.gl.uniform2f(u_res2,this.width*4,this.height*4)
 
-            // Where to draw
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[b]);
-            this.gl.viewport(0,0,this.width,this.height);
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-            this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+        let u_texres2 = this.gl.getUniformLocation(this.programs[1],'u_texres');
+        this.gl.uniform2f(u_texres2,this.width,this.height)
+
+        // Where to draw
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[b]);
+        this.gl.viewport(0,0,this.width,this.height);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
 
-            this.swap = b;
-        }
+        this.swap = b;
+    
         
         
     }

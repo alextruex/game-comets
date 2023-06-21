@@ -10,7 +10,7 @@ class Game{
     physics:Physics;
 
     constructor(){
-        this.video = new Video(320,240);
+        this.video = new Video(640,480);
         this.input = new Input();
         this.stage = new Stage(this);
         this.physics = new Physics();

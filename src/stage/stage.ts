@@ -13,6 +13,7 @@ class Stage{
 
     update(game:Game){
         this.player.update(game);
+        this.meteors.update(game);
     }
 }
 

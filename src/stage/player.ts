@@ -1,13 +1,15 @@
 import Game from '../main';
 
-import { asteroid , cube } from '../geometry/geometry';
+import { asteroid , cube, cannon } from '../geometry/geometry';
 
 class Player{
-    angle:number;
+    angle:number = 90;
     shape:number;
+    y:number = 0;
     constructor(game:Game){
-        this.shape = game.video.createDShape(cube),
-        this.angle = 90;
+        this.shape = game.video.createDShape(cannon),
+        
+        game.video.translate(16,0,this.shape);
     }
 
     update(game:Game){
@@ -15,23 +17,21 @@ class Player{
         let v = game.video;
         let s = this.shape;
 
-        if(n.poll('ArrowRight')){
-            v.translate(2,0,s);
-        }
-        if(n.poll('ArrowLeft')){
-            v.translate(-2,0,s);
-        }
         if(n.poll('ArrowUp')){
             v.translate(0,-2,s);
+            this.y -= 2;
         }
         if(n.poll('ArrowDown')){
             v.translate(0,2,s);
+            this.y += 2;
         }
-        if(n.poll('a')){
-            v.rotate(-.1,s);
+        if(n.poll('ArrowLeft')){
+            v.rotate(-3*(Math.PI/180),s);
+            this.angle -= 3;
         }
-        if(n.poll('d')){
-            v.rotate(.1,s);
+        if(n.poll('ArrowRight')){
+            v.rotate(3*(Math.PI/180),s);
+            this.angle += 3;
         }
     }
 }

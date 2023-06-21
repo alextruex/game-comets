@@ -28,4 +28,15 @@ let cube:Array<number> = [
     -8,-8,
 ]
 
-export {asteroid, cube};
+let cannon:Array<number> = [
+    -16,-8,
+    16,-8,
+    16,-8,
+    16,8,
+    16,8,
+    -16,8,
+    -16,8,
+    -16,-8,
+]
+
+export {asteroid, cube, cannon};

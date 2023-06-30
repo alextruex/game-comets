@@ -12,7 +12,7 @@ class Meteors{
 
     update(game:Game){
         if(game.input.poll(' ')){
-            game.video.position(0,game.stage.player.y,this.meteors[0]);
+            game.video.position(game.stage.player.x,game.stage.player.y,this.meteors[0]);
             this.xspeed = Math.sin(game.stage.player.angle*(Math.PI/180))*5;
             this.yspeed = -Math.cos(game.stage.player.angle*(Math.PI/180))*5;
         }

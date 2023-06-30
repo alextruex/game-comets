@@ -1,15 +1,18 @@
 import Game from '../main';
 
-import { asteroid , cube, cannon } from '../geometry/geometry';
+import { asteroid , cube } from '../geometry/geometry';
+import cannon from '../geometry/cannon';
+import arrow from '../geometry/arrow';
 
 class Player{
     angle:number = 90;
     shape:number;
     y:number = 0;
+    x:number = 16;
     constructor(game:Game){
         this.shape = game.video.createDShape(cannon),
         
-        game.video.translate(16,0,this.shape);
+        game.video.translate(this.x,this.y,this.shape);
     }
 
     update(game:Game){

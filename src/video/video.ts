@@ -12,8 +12,10 @@ class DynamicShape{
     y:number = 0;
     angle:number = 0;
     bufferIndex:number = 0;
-    constructor(bufferIndex:number){
+    bufferSize:number = 0;
+    constructor(bufferIndex:number, bufferSize:number){
         this.bufferIndex = bufferIndex;
+        this.bufferSize = bufferSize;
     }
 }
 
@@ -50,8 +52,8 @@ class Video{
         this.canvas.width = width*2;
         this.canvas.height = height*2;
         //this.canvas.style.imageRendering = 'optimizeSpeed';
-        this.canvas.style.imageRendering = 'optimizeLegibility';
-        this.gl = <WebGLRenderingContext>this.canvas.getContext('webgl',{preserveDrawingBuffer:false});
+        //this.canvas.style.imageRendering = 'optimizeLegibility';
+        this.gl = <WebGLRenderingContext>this.canvas.getContext('webgl',{preserveDrawingBuffer:false,premultipliedAlpha: false });
         this.gl.clearColor(0.1, 0.0, 0.0, 1.0);    
 
         //Load Programs
@@ -130,13 +132,13 @@ class Video{
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
         let bufferIndex = this.buffers.push(buffer) - 1;
-        let dShape = new DynamicShape(bufferIndex);
+        let dShape = new DynamicShape(bufferIndex,vertices.length);
         return this.dShapes.push(dShape) - 1;
     }
 
     public cloneDShape(index:number){
         let bufferIndex = this.dShapes[index].bufferIndex;
-        let dShape = new DynamicShape(bufferIndex);
+        let dShape = new DynamicShape(bufferIndex,this.dShapes[index].bufferSize);
         return this.dShapes.push(dShape) - 1;
     }
 
@@ -174,6 +176,9 @@ class Video{
 
         // Draw Dynamic Shapes
         this.gl.useProgram(this.programs[0]);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[a]);
+        this.gl.viewport(0,0,this.width,this.height);
+
         for(let i = 0; i < this.dShapes.length; i++){
             let d = this.dShapes[i];
             
@@ -208,10 +213,9 @@ class Video{
             
 
             //we are drawing onto our texture
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[a]);
-            this.gl.viewport(0,0,this.width,this.height);
+            
             //this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-            this.gl.drawArrays(this.gl.LINES, 0, 8);
+            this.gl.drawArrays(this.gl.LINES, 0, this.dShapes[i].bufferSize/2);
         }
 
         //-------------------Draw texture to frame---------------------------
@@ -233,7 +237,7 @@ class Video{
         this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
 
         let u_res = this.gl.getUniformLocation(this.programs[1],'u_res');
-        this.gl.uniform2f(u_res,this.width*4,this.height*4)
+        this.gl.uniform2f(u_res,this.width*2,this.height*2)
 
         let u_texres = this.gl.getUniformLocation(this.programs[1],'u_texres');
         this.gl.uniform2f(u_texres,this.width,this.height)
@@ -264,7 +268,7 @@ class Video{
         this.gl.vertexAttribPointer(a_tex,2,this.gl.FLOAT,false,0,0);
 
         let u_res2 = this.gl.getUniformLocation(this.programs[1],'u_res');
-        this.gl.uniform2f(u_res2,this.width*4,this.height*4)
+        this.gl.uniform2f(u_res2,this.width*2,this.height*2)
 
         let u_texres2 = this.gl.getUniformLocation(this.programs[1],'u_texres');
         this.gl.uniform2f(u_texres2,this.width,this.height)

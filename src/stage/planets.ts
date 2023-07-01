@@ -18,7 +18,8 @@ class Planet{
 class Planets{
     planets:Array<Planet> = [];
     constructor(game:Game){
-        this.planets.push(new Planet(240,240,48));
+        this.planets.push(new Planet(320,240,64));
+        game.video.createCircle(320,240,64);
     }
 
     update(game:Game){

@@ -8,7 +8,7 @@ class Player{
     angle:number = 90;
     shape:number;
     y:number = 0;
-    x:number = 16;
+    x:number = 64;
     constructor(game:Game){
         this.shape = game.video.createDShape(cannon),        
         game.video.translate(this.x,this.y,this.shape);

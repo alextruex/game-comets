@@ -144,12 +144,17 @@ class Video{
 
     public createCircle(x:number,y:number,r:number){
         let vertices:Array<number> = [];
-        for(let i = 0; i < 64; i++){
-            vertices.push(Math.cos(i)*r);
-            vertices.push(Math.cos(i)*r);
-            vertices.push(Math.sin(i)*r);
-            vertices.push(Math.sin(i)*r);
-        } 
+        vertices.push(x+Math.cos(0)*r);
+        vertices.push(y+Math.sin(0)*r);
+        for(let i = 0; i < 2*Math.PI; i+=.25){
+            vertices.push(x+Math.cos(i)*r);
+            vertices.push(y+Math.sin(i)*r);
+            vertices.push(x+Math.cos(i)*r);
+            vertices.push(y+Math.sin(i)*r);
+        }
+        vertices.push(x+Math.cos(2*Math.PI)*r);
+        vertices.push(y+Math.sin(2*Math.PI)*r);
+        
         let buffer = <WebGLBuffer>this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);

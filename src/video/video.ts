@@ -142,6 +142,22 @@ class Video{
         return this.dShapes.push(dShape) - 1;
     }
 
+    public createCircle(x:number,y:number,r:number){
+        let vertices:Array<number> = [];
+        for(let i = 0; i < 64; i++){
+            vertices.push(Math.cos(i)*r);
+            vertices.push(Math.cos(i)*r);
+            vertices.push(Math.sin(i)*r);
+            vertices.push(Math.sin(i)*r);
+        } 
+        let buffer = <WebGLBuffer>this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+        let bufferIndex = this.buffers.push(buffer) - 1;
+        let dShape = new DynamicShape(bufferIndex,vertices.length);
+        return this.dShapes.push(dShape) - 1;
+    }
+
     public createTBox(x:number,y:number,text:string){
         
     }
@@ -174,6 +190,10 @@ class Video{
         
         //------------ Draw shapes to texture ----------------------
 
+
+        // Draw Static Shapes
+
+
         // Draw Dynamic Shapes
         this.gl.useProgram(this.programs[0]);
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fBuffers[a]);
@@ -190,8 +210,6 @@ class Video{
             
             // Generate transformation matrix
             let u_mat = this.gl.getUniformLocation(this.programs[0],'u_mat');
-            
-            // Calculate Translation
             let matA = m3Multiply([
                 2/this.width,0,0,
                 0,-2/this.height,0,

@@ -10,8 +10,7 @@ class Player{
     y:number = 0;
     x:number = 16;
     constructor(game:Game){
-        this.shape = game.video.createDShape(cannon),
-        
+        this.shape = game.video.createDShape(cannon),        
         game.video.translate(this.x,this.y,this.shape);
     }
 

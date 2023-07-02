@@ -34,6 +34,8 @@ class Video{
     gl:WebGLRenderingContext;
     width:number;
     height:number;
+    mode:number = 0;
+    modeSet:number = 0;
     programs:Array<WebGLProgram> = [];
     buffers:Array<WebGLBuffer> = [];
     textures:Array<WebGLTexture> = [];

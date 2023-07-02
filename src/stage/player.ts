@@ -20,20 +20,20 @@ class Player{
         let s = this.shape;
 
         if(n.poll('ArrowUp')){
-            v.translate(0,-2,s);
-            this.y -= 2;
+            v.translate(0,-3,s);
+            this.y -= 3;
         }
         if(n.poll('ArrowDown')){
-            v.translate(0,2,s);
-            this.y += 2;
+            v.translate(0,3,s);
+            this.y += 3;
         }
         if(n.poll('ArrowLeft')){
-            v.rotate(-3*(Math.PI/180),s);
-            this.angle -= 3;
+            v.rotate(-4*(Math.PI/180),s);
+            this.angle -= 4;
         }
         if(n.poll('ArrowRight')){
-            v.rotate(3*(Math.PI/180),s);
-            this.angle += 3;
+            v.rotate(4*(Math.PI/180),s);
+            this.angle += 4;
         }
     }
 }

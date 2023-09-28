@@ -1,5 +1,5 @@
 import Game from '../game';
-import {asteroid} from '../geometry/geometry';
+import {asteroid} from '../geometry/poly/poly';
 import Shape from '../video/shape';
 
 class Meteor{

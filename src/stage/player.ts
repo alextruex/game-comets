@@ -1,7 +1,7 @@
 import Game from '../main';
 import Shape from '../video/shape';
 
-import cannon from '../geometry/cannon';
+import cannon from '../geometry/poly/cannon';
 
 class Player{
     shape:Shape;
